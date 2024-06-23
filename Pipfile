@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+requests = "*"
+bs4 = "*"
+gunicorn = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
+
+[scripts]
+dev = "flask run"
+start = "gunicorn -w 2 index:app --name crawler-service --max-requests 1000 --access-logfile access_logs.log --error-logfile error_logs.log --capture-output --daemon"

@@ -1,0 +1,3 @@
+siteamps/*
+.env
+*.log
