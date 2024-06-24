@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, urldefrag
 import concurrent.futures
 import os
+from xml.etree.ElementTree import Element, SubElement, ElementTree
 
 def is_valid_url(url):
     parsed = urlparse(url)
@@ -28,9 +29,17 @@ def parse_links(base_url, content):
             urls.add(normalized_url)
     return urls
 
+def clean_url(url):
+    url = url.strip()
+    
+    if url.endswith('/'):
+        url = url[:-1]
+    
+    return url
+
 def crawl(base_url, logs):
     visited = set()
-    to_visit = {base_url}
+    to_visit = {clean_url(base_url)}
     all_urls = set()
     max_workers = os.cpu_count()
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -41,17 +50,18 @@ def crawl(base_url, logs):
             for future in concurrent.futures.as_completed(futures):
                 url, content = future.result()
                 if content:
+                    url = clean_url(url)
                     if logs:
                         print("Visited: ", url)
-                    visited.add(url)
-                    all_urls.add(url)
-                    new_urls = parse_links(base_url, content)
-                    to_visit.update(new_urls - visited)
+                    if url not in visited:
+                        visited.add(url)
+                        all_urls.add(url)
+                        new_urls = parse_links(base_url, content)
+                        to_visit.update(new_urls - visited)
 
     return all_urls
 
 def generate_sitemap(urls, output_file):
-    from xml.etree.ElementTree import Element, SubElement, ElementTree
 
     urlset = Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     

@@ -1,6 +1,4 @@
-# syntax=docker/dockerfile:1
-
-FROM --platform=linux/amd64 python:3.12-slim
+FROM python:3.12-slim
 
 WORKDIR /python-docker
 
@@ -9,4 +7,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-CMD ["gunicorn", "-w", "4", "index:app", "--name", "crawler-service", "--max-requests", "100", "--capture-output"]
+CMD ["gunicorn", "index:asgi_app", "--name", "crawler-service", "--max-requests", "1",  "--worker-class", "uvicorn.workers.UvicornWorker", "--access-logfile", "access_logs.log", "--error-logfile", "error_logs.log", "--capture-output"]

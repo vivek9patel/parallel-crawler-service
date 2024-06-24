@@ -3,6 +3,7 @@ from crawler import parallel_crawler, simple_crawler
 from crawler.sitemaps import read_sitemap, check_if_exists
 from middleware import middleware
 import os
+from asgiref.wsgi import WsgiToAsgi
 
 PORT = int(os.environ.get('PORT'))
 
@@ -44,7 +45,17 @@ def simple_crawler_api():
         sitemap_content = read_sitemap(sitemap_location)
         return Response(sitemap_content, mimetype='application/xml')
     return Response('Failed to crawl', status=500)
-    
+
+def check_sitemap_folder():
+    if not os.path.exists("sitemaps"):
+        os.makedirs("sitemaps")
+        print(f"Sitemaps Folder created")
+    else:
+        print(f"Sitemaps Folder already exists")
+
+check_sitemap_folder()
+
+asgi_app = WsgiToAsgi(app)
 
 if __name__ == '__main__':
-    app.run(port=PORT)
+    asgi_app.run(port=PORT)
